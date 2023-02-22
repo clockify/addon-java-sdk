@@ -169,11 +169,11 @@ public class ClockifyManifestProcessor implements Processor {
 
     private MethodSpec getPropertySetterMethod(String property, TypeName propertyType,
                                                ClassName returnType) {
-
         return MethodSpec.methodBuilder(Utils.toMethodName(property))
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(returnType)
                 .addParameter(propertyType, "value")
+                .addJavadoc(getPropertyDescription(getProperties().get(property)))
                 .build();
     }
 
@@ -205,6 +205,13 @@ public class ClockifyManifestProcessor implements Processor {
         return manifest.get("definitions")
                 .get(definition)
                 .get("required");
+    }
+
+    private String getPropertyDescription(JsonNode node) {
+        if (node.has("description")) {
+            return node.get("description").asText();
+        }
+        return "";
     }
 
     private ClassName getInterfaceClassName(String property) {
