@@ -94,12 +94,8 @@
 
     <distributionManagement>
         <repository>
-            <id>gitlab-maven</id>
-            <url>https://git.coingdevelopment.com/api/v4/projects/177/packages/maven</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/clockify/addon-java-sdk</url>
         </repository>
-        <snapshotRepository>
-            <id>gitlab-maven</id>
-            <url>https://git.coingdevelopment.com/api/v4/projects/177/packages/maven</url>
-        </snapshotRepository>
     </distributionManagement>
 </project>
