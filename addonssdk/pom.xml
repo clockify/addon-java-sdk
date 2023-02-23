@@ -6,7 +6,7 @@
 
     <groupId>addons-sdk</groupId>
     <artifactId>sdk</artifactId>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
 
     <properties>
         <maven.compiler.source>18</maven.compiler.source>
@@ -24,6 +24,7 @@
             <groupId>addons-sdk</groupId>
             <artifactId>processor</artifactId>
             <version>1.0</version>
+            <scope></scope>
         </dependency>
 
         <dependency>
