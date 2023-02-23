@@ -54,4 +54,11 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/clockify/addon-java-sdk</url>
+        </repository>
+    </distributionManagement>
+
 </project>
