@@ -1,10 +1,6 @@
 name: Publish sdk
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - addonssdk/**
   pull_request:
     branches: [ "main" ]
     paths:
