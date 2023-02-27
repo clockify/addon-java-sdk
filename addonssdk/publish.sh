@@ -24,5 +24,3 @@ git add pom.xml
 git commit -m "$VERSION_TYPE version bump"
 git push https://"$1"@github.com/clockify/addon-java-sdk.git
 mvn deploy
-
-
