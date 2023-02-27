@@ -21,7 +21,7 @@ esac
 
 mvn build-helper:parse-version versions:set@$VERSION_TYPE
 git add pom.xml
-git commit -c user.name="Clockify Bot" -c user.email="clockify-boy@clockify.me" -m "$VERSION_TYPE version bump"
+git -c user.name="Clockify Bot" -c user.email="clockify-bot@clockify.me" commit -m "$VERSION_TYPE version bump"
 git push https://"$1"@github.com/clockify/addon-java-sdk.git
 mvn deploy
 
