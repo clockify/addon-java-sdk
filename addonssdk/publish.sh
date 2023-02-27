@@ -22,5 +22,5 @@ esac
 mvn build-helper:parse-version versions:set@$VERSION_TYPE
 git add pom.xml
 git commit -m "$VERSION_TYPE version bump"
-git push https://"$1"@github.com/fspasovski-clockify/maven-playground.git
+git push https://"$1"@github.com/clockify/addon-java-sdk.git
 mvn deploy
