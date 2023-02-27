@@ -24,4 +24,3 @@ git add pom.xml
 git -c user.name="Clockify Bot" -c user.email="clockify-bot@clockify.me" commit -m "$VERSION_TYPE version bump"
 git push https://"$1"@github.com/clockify/addon-java-sdk.git
 mvn deploy
-
