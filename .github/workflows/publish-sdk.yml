@@ -28,4 +28,4 @@ jobs:
     - name: Run SDK publishing script
       run: |
         cd $GITHUB_WORKSPACE/addonssdk
-        ./publish.sh ${{ secrets.GITHUB_TOKEN }}
+        ./publish.sh ${{ secrets.GITHUB_TOKEN }} "${{ toJson(github.event.pull_request.labels.*.name) }}"
