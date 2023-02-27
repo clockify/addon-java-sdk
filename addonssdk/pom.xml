@@ -120,6 +120,30 @@
                             </newVersion>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>minor</id>
+                        <goals>
+                            <goal>set</goal>
+                        </goals>
+                        <configuration>
+                            <generateBackupPoms>false</generateBackupPoms>
+                            <newVersion>
+                                ${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0
+                            </newVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>major</id>
+                        <goals>
+                            <goal>set</goal>
+                        </goals>
+                        <configuration>
+                            <generateBackupPoms>false</generateBackupPoms>
+                            <newVersion>
+                                ${parsedVersion.nextMajorVersion}.0.0
+                            </newVersion>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
