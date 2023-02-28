@@ -1,8 +1,13 @@
-# Addons SDK
+Addon SDK is a framework that is written in Java and offers abstractions to get up and running with the development of addons for the CAKE.com marketplace.
+
+The SDK is intended to be easy to use and intuitive.
+
+More features are planned and will be added to the SDK.
+
 ## Project
 The project is organized in two modules:
 - the annotation processor
-- the SDK
+- the addon SDK
 
 ## Annotation processor
 The annotation processor module is only used at build-time. It generates helper interfaces based on the manifest schema.
@@ -94,21 +99,21 @@ ClockifyLifecycleEvent lifecycle = ClockifyLifecycleEvent
 ```
 
 
-## SDK Structure
-The project is structured into two parts, the shared codebase and the product-specific codebase:
+## Addon SDK
+The SDK is structured into two parts, the shared codebase and the product-specific codebase:
 - shared
 - clockify, pumble, plaky
 
 The product-specific layers will allow for more granular configuration and validation as well as provide specific helper classes.
 
-## Features
+### Features
 - Predefined POJO models
 - Product specific validation & helpers
 - Centralized definition and handling of all the components of the addon
 - Easy to get started by either relying on the embedded webserver or serving the provided servlet class through a web framework
 - Middleware support
 
-## Getting started
+### Getting started
 First, define an addon descriptor:
 ```java
 AddonDescriptor descriptor = new AddonDescriptor("key", "name", "description", "baseUrl");
