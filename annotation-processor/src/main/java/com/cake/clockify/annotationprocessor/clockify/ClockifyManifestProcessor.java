@@ -38,7 +38,8 @@ public class ClockifyManifestProcessor implements Processor {
                     "event", "on"
             ),
             "setting", Map.of(
-                    "type", "as"
+                    "type", "as",
+                    "accessLevel", "allow"
             )
     );
 
