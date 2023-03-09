@@ -4,6 +4,21 @@ The SDK is intended to be easy to use and intuitive.
 
 More features are planned and will be added to the SDK.
 
+## Installation
+Maven must be configured as described <a href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-to-github-packages">here</a>
+before the Addons SDK can be installed.
+
+Once you have configured the required settings, you can import the Addons SDK into your project by adding
+the following dependency to your pom.xml file:
+
+```
+<dependency>
+    <groupId>com.cake.clockify</groupId>
+    <artifactId>addon-sdk</artifactId>
+    <version>${addonssdk.version}</version>
+</dependency>
+```
+
 ## Project
 The project is organized in two modules:
 - the annotation processor

@@ -24,6 +24,7 @@ public class ClockifySettingsGroup extends SettingsGroup<ClockifySetting> {
     private static class ClockifySettingsGroupBuilder implements
             ClockifySettingsGroupBuilderIdStep,
             ClockifySettingsGroupBuilderTitleStep,
+            ClockifySettingsGroupBuilderSettingsStep,
             ClockifySettingsGroupBuilderOptionalStep {
     }
 }

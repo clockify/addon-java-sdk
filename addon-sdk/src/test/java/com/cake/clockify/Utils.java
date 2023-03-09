@@ -66,6 +66,7 @@ public class Utils {
                                         ClockifySetting.builder()
                                                 .id("id")
                                                 .name("name")
+                                                .allowEveryone()
                                                 .asNumber()
                                                 .value(12)
                                                 .build()

@@ -14,6 +14,8 @@ public class Setting {
     @NonNull
     private String name;
     @NonNull
+    private String accessLevel;
+    @NonNull
     private String type;
 
     private Object value;
