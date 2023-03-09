@@ -11,14 +11,12 @@ import java.util.List;
 public class ClockifySetting extends Setting {
 
     @Builder
-    protected ClockifySetting(@NonNull String id, @NonNull String name, @NonNull String type,
-                           Object value,
-                           String key, String description, String placeholder,
-                           List<String> allowedValues, Boolean required, Boolean copyable,
-                           Boolean readOnly) {
-        super(id, name, type, value, key, description, placeholder, allowedValues, required,
-                copyable,
-                readOnly);
+    public ClockifySetting(@NonNull String id, @NonNull String name, @NonNull String accessLevel,
+                           @NonNull String type, Object value, String key, String description,
+                           String placeholder, List<String> allowedValues, Boolean required,
+                           Boolean copyable, Boolean readOnly) {
+        super(id, name, accessLevel, type, value, key, description, placeholder, allowedValues,
+                required, copyable, readOnly);
     }
 
     public static ClockifySettingBuilderIdStep builder() {
@@ -28,6 +26,7 @@ public class ClockifySetting extends Setting {
     private static class ClockifySettingBuilder implements
             ClockifySettingBuilderIdStep,
             ClockifySettingBuilderNameStep,
+            ClockifySettingBuilderAccessLevelStep,
             ClockifySettingBuilderTypeStep,
             ClockifySettingBuilderValueStep,
             ClockifySettingBuilderOptionalStep {
