@@ -12,14 +12,8 @@ import com.cake.clockify.addonsdk.shared.request.HttpRequest;
 import com.cake.clockify.addonsdk.shared.response.HttpResponse;
 import com.cake.clockify.addonsdk.shared.utils.Utils;
 import com.cake.clockify.addonsdk.shared.utils.ValidationUtils;
-import com.cake.clockify.addonsdk.shared.validators.ComponentValidator;
-import com.cake.clockify.addonsdk.shared.validators.LifecycleEventValidator;
-import com.cake.clockify.addonsdk.shared.validators.SettingValidator;
-import com.cake.clockify.addonsdk.shared.validators.Validator;
-import com.cake.clockify.addonsdk.shared.validators.WebhookValidator;
 import lombok.Getter;
 import lombok.NonNull;
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,21 +25,9 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
     public static final String PATH_MANIFEST = "/manifest";
 
     private static final String ERROR_PATH_ALREADY_REGISTERED = "Handler has already been registered.";
-    private static final String ERROR_ID_ALREADY_REGISTERED =
-            "Setting ID has already been registered.";
-
-
-    private static final int HTTP_SUCCESS = 200;
-    private static final int HTTP_METHOD_NOT_ALLOWED = 405;
-    private static final int HTTP_INTERNAL_SERVER_ERROR = 500;
 
     @Getter
     protected final Manifest manifest;
-
-    protected Validator<Webhook> webhookValidator = new WebhookValidator();
-    protected Validator<Component> componentValidator = new ComponentValidator();
-    protected Validator<LifecycleEvent> lifecycleEventValidator = new LifecycleEventValidator();
-    protected Validator<Settings> settingsValidator = new SettingValidator();
 
     private final Map<Request, RequestHandler<?>> requestHandlers = new HashMap<>();
     private final List<Middleware> middlewares = new LinkedList<>();
@@ -68,7 +50,7 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
 
         this.requestHandlers.put(new Request(manifestPath, HttpRequest.GET),
                 request -> HttpResponse.builder()
-                        .statusCode(HTTP_SUCCESS)
+                        .success()
                         .body(Utils.GSON.toJson(manifest))
                         .build());
     }
@@ -85,7 +67,7 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
             RequestHandler<?> handler = requestHandlers.get(new Request(path, method));
             if (handler == null) {
                 return HttpResponse.builder()
-                        .statusCode(HTTP_METHOD_NOT_ALLOWED)
+                        .methodNotAllowed()
                         .build();
             }
 
@@ -95,12 +77,16 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
             e.printStackTrace();
 
             return HttpResponse.builder()
-                    .statusCode(HTTP_INTERNAL_SERVER_ERROR)
+                    .internalServerError()
                     .build();
         }
     }
 
     public synchronized void registerHandler(String path, String method, RequestHandler<?> handler) {
+        if (!ValidationUtils.isValidManifestPath(path)) {
+            throw new ValidationException("Url should be an absolute path and not end with a slash.");
+        }
+
         Request key = new Request(path, method);
 
         if (requestHandlers.containsKey(key)) {
@@ -111,36 +97,33 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
     }
 
     public void registerWebhook(W webhook, RequestHandler<?> handler) {
-        webhookValidator.validate(webhook);
-
         registerHandler(webhook.getPath(), HttpRequest.POST, handler);
         manifest.addWebhook(webhook);
     }
 
     public void registerLifecycleEvent(L lifecycleEvent, RequestHandler<?> handler) {
-        lifecycleEventValidator.validate(lifecycleEvent);
-
         registerHandler(lifecycleEvent.getPath(), HttpRequest.POST, handler);
         manifest.addLifecycleEvent(lifecycleEvent);
     }
 
     public void registerComponent(C component, RequestHandler<?> handler) {
-        componentValidator.validate(component);
-
         registerHandler(component.getPath(), HttpRequest.GET, handler);
         manifest.addComponent(component);
     }
 
     public void registerSettings(S settings) {
-        settingsValidator.validate(settings);
         manifest.setSettings(settings);
+    }
+
+    public List<Request> getRegisteredRequests() {
+        return requestHandlers.keySet().stream().toList();
     }
 
     public synchronized void useMiddleware(Middleware middleware) {
         middlewares.add(middleware);
     }
 
-    private record Request(String path, String method) {
+    public record Request(String path, String method) {
     }
 
     private static class RequestExecutor implements MiddlewareChain {
