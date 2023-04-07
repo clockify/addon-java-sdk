@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "version": "1.0",
+  "version": "1.0.1",
   "definitions": {
     "url": {
       "format": "uri",
@@ -75,7 +75,7 @@
       ]
     },
     "lifecycle": {
-      "description": "Specialized webhook triggered on addon lifecycle event. Only INSTALLED lifecycle is required.",
+      "description": "Specialized webhook triggered on addon lifecycle event.",
       "type": "object",
       "properties": {
         "path": {
@@ -143,6 +143,14 @@
         "iconPath": {
           "type": "string",
           "description": "Path to addon hosted image which will serve as an icon for Clockify component. Path is part of the url from which the image will be served. Full url is constructed by concatenating addon 'baseUrl' and path."
+        },
+        "width": {
+          "type": "integer",
+          "description": "Defines rendered component width expressed in 'vw'. Applicable only to WIDGET components."
+        },
+        "height": {
+          "type": "integer",
+          "description": "Defines rendered component height expressed in 'vw'. Applicable only to WIDGET components."
         }
       },
       "required": [
@@ -346,7 +354,7 @@
   },
   "properties": {
     "schemaVersion": {
-      "description": "All JSON schemes will be versioned and this field specifies which version.",
+      "description": "All JSON schemes will be versioned and this field specifies which version will be used to validate JSON manifest. If no 'schemaVersion' is defined, latest JSON schema version will be used.",
       "type": [
         "string",
         "integer"
@@ -376,6 +384,10 @@
     "description": {
       "type": "string",
       "description": "Brief description of given addon functionalities and purpose."
+    },
+    "iconPath": {
+      "type": "string",
+      "description": "Path to addon icon. Path is part of the url where image icon is being hosted. Full url is constructed by concatenating addon 'baseUrl' and path."
     },
     "lifecycle": {
       "type": "array",
@@ -413,10 +425,8 @@
     }
   },
   "required": [
-    "schemaVersion",
     "key",
     "name",
-    "baseUrl",
-    "lifecycle"
+    "baseUrl"
   ]
 }

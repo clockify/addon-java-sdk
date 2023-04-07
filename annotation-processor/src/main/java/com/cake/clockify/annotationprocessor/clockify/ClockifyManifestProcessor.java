@@ -179,6 +179,7 @@ public class ClockifyManifestProcessor implements Processor {
 
     private TypeName getTypeNameFromPropertyNode(JsonNode node) {
         return switch (Utils.getNodeType(node)) {
+            case "integer" -> TypeName.get(Integer.class);
             case "boolean" -> TypeName.get(Boolean.class);
             case "string" -> TypeName.get(String.class);
 
