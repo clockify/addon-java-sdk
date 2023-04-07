@@ -19,7 +19,8 @@ public class Utils {
                 "key",
                 "name",
                 "description",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                null
         );
     }
 

@@ -11,10 +11,11 @@ import java.util.Map;
 public class ClockifyComponent extends Component {
 
     @Builder
-    protected ClockifyComponent(@NonNull String type, @NonNull String accessLevel,
+    public ClockifyComponent(@NonNull String type, @NonNull String accessLevel,
                              @NonNull String path,
-                             String label, String iconPath, Map<String, Object> options) {
-        super(type, accessLevel, path, label, iconPath, options);
+                             String label, String iconPath, Integer width, Integer height,
+                             Map<String, Object> options) {
+        super(type, accessLevel, path, label, iconPath, width, height, options);
     }
 
     public static ClockifyComponentBuilderTypeStep builder() {

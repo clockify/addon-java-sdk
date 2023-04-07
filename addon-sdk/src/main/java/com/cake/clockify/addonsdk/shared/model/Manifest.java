@@ -25,6 +25,7 @@ public class Manifest {
     private String description;
     @NonNull
     private String baseUrl;
+    private String iconPath;
     @NonNull
     @Builder.Default
     private List<LifecycleEvent> lifecycle = new ArrayList<>();
