@@ -46,6 +46,7 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
                 .name(descriptor.name())
                 .description(descriptor.description())
                 .baseUrl(descriptor.baseUrl())
+                .iconPath(descriptor.iconPath())
                 .build();
 
         this.requestHandlers.put(new Request(manifestPath, HttpRequest.GET),

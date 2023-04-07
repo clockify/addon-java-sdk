@@ -22,6 +22,10 @@ public class Component {
 
     private String iconPath;
 
+    private Integer width;
+
+    private Integer height;
+
     private Map<String, Object> options;
 }
 
