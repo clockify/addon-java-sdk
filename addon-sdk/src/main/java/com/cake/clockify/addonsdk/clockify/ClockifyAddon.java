@@ -16,6 +16,6 @@ public class ClockifyAddon extends Addon<ClockifyWebhook, ClockifyComponent, Clo
 
     @Override
     public HttpClient getClient() {
-        return new ClockifyClient();
+        throw new UnsupportedOperationException();
     }
 }
