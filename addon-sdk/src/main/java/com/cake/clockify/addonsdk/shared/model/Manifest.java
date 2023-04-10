@@ -15,7 +15,7 @@ public class Manifest {
 
     @NonNull
     @Builder.Default
-    private String schemaVersion = "1.0";
+    private String schemaVersion = "1.0.1";
 
     @NonNull
     private String key;
