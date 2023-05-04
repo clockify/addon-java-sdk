@@ -116,6 +116,11 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
         manifest.setSettings(settings);
     }
 
+    public void registerCustomSettings(String path, RequestHandler<?> handler) {
+        registerHandler(path, HttpRequest.GET, handler);
+        manifest.setCustomSettingsPath(path);
+    }
+
     public List<Request> getRegisteredRequests() {
         return requestHandlers.keySet().stream().toList();
     }

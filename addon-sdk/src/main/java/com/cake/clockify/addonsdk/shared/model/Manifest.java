@@ -35,7 +35,11 @@ public class Manifest {
     @NonNull
     @Builder.Default
     private List<Component> components = new ArrayList<>();
-    private Settings settings;
+
+    /**
+     * One of: {@link Settings}, {@link String}
+     */
+    private Object settings;
 
     public void addLifecycleEvent(LifecycleEvent lifecycleEvent) {
         lifecycle.add(lifecycleEvent);
@@ -53,6 +57,10 @@ public class Manifest {
         this.settings = settings;
     }
 
+    public void setCustomSettingsPath(String settingsPath) {
+        this.settings = settingsPath;
+    }
+
     public List<LifecycleEvent> getLifecycle() {
         return List.copyOf(lifecycle);
     }
@@ -65,7 +73,7 @@ public class Manifest {
         return List.copyOf(components);
     }
 
-    public Settings getSettings() {
+    public Object getSettings() {
         return settings;
     }
 }
