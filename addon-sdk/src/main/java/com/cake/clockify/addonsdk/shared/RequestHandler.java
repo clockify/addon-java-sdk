@@ -1,8 +1,11 @@
 package com.cake.clockify.addonsdk.shared;
 
-import com.cake.clockify.addonsdk.shared.request.HttpRequest;
-import com.cake.clockify.addonsdk.shared.response.HttpResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-public interface RequestHandler<R extends HttpRequest> {
-    HttpResponse handle(R request);
+import java.io.IOException;
+
+@FunctionalInterface
+public interface RequestHandler {
+    void handle(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

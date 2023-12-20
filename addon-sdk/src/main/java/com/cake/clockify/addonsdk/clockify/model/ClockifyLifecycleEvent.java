@@ -1,11 +1,9 @@
 package com.cake.clockify.addonsdk.clockify.model;
 
 import com.cake.clockify.addonsdk.shared.model.LifecycleEvent;
-import com.cake.clockify.annotationprocessor.clockify.ExtendClockifyManifest;
 import lombok.Builder;
 import lombok.NonNull;
 
-@ExtendClockifyManifest(definition = "lifecycle")
 public class ClockifyLifecycleEvent extends LifecycleEvent {
 
     @Builder

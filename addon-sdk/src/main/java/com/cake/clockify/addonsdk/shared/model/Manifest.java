@@ -1,40 +1,36 @@
 package com.cake.clockify.addonsdk.shared.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Builder
 @Getter
 @AllArgsConstructor
 public class Manifest {
 
     @NonNull
-    @Builder.Default
-    private String schemaVersion = "1.0.1";
+    protected String schemaVersion;
 
     @NonNull
-    private String key;
+    protected String key;
     @NonNull
-    private String name;
+    protected String name;
+    protected String description;
     @NonNull
-    private String description;
+    protected String baseUrl;
+    protected String iconPath;
     @NonNull
-    private String baseUrl;
-    private String iconPath;
+    protected String minimalSubscriptionPlan;
     @NonNull
-    @Builder.Default
-    private List<LifecycleEvent> lifecycle = new ArrayList<>();
+    protected List<LifecycleEvent> lifecycle;
     @NonNull
-    @Builder.Default
-    private List<Webhook> webhooks = new ArrayList<>();
+    protected List<Webhook> webhooks;
     @NonNull
-    @Builder.Default
-    private List<Component> components = new ArrayList<>();
+    protected List<Component> components;
+    @NonNull
+    protected List<String> scopes;
 
     /**
      * One of: {@link Settings}, {@link String}

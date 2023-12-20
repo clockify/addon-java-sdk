@@ -2,12 +2,11 @@ package com.cake.clockify;
 
 import com.cake.clockify.addonsdk.clockify.ClockifyAddon;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
-import com.cake.clockify.addonsdk.shared.AddonDescriptor;
 import com.cake.clockify.addonsdk.shared.AddonServlet;
 import com.cake.clockify.addonsdk.shared.EmbeddedServer;
-import com.cake.clockify.addonsdk.shared.response.HttpResponse;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -19,11 +18,15 @@ public class ServletTests {
     @Test
     @SneakyThrows
     public void testServerStartup() {
-        AddonDescriptor descriptor = Utils.getSampleDescriptor();
-        ClockifyAddon clockifyAddon = new ClockifyAddon(descriptor);
+        ClockifyAddon clockifyAddon = new ClockifyAddon(Utils.getSampleManifest());
+        clockifyAddon.addFilter(((request, response, chain) -> {
+            response.setContentType("application/json");
+            chain.doFilter(request, response);
+        }));
 
         ClockifyComponent component = Utils.getSampleComponent();
-        clockifyAddon.registerComponent(component, (r) -> HttpResponse.builder().build());
+        clockifyAddon.registerComponent(component, (r, s) -> {
+        });
 
         AddonServlet servlet = new AddonServlet(clockifyAddon);
 

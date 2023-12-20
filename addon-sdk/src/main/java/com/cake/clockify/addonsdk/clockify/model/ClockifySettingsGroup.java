@@ -1,13 +1,11 @@
 package com.cake.clockify.addonsdk.clockify.model;
 
 import com.cake.clockify.addonsdk.shared.model.SettingsGroup;
-import com.cake.clockify.annotationprocessor.clockify.ExtendClockifyManifest;
 import lombok.Builder;
 import lombok.NonNull;
 
 import java.util.List;
 
-@ExtendClockifyManifest(definition = "settingsGroup")
 public class ClockifySettingsGroup extends SettingsGroup<ClockifySetting> {
 
     @Builder

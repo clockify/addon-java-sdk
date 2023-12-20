@@ -3,16 +3,25 @@ package com.cake.clockify;
 import com.cake.clockify.addonsdk.clockify.ClockifyAddon;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyLifecycleEvent;
+import com.cake.clockify.addonsdk.clockify.model.ClockifyManifest;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyWebhook;
-import com.cake.clockify.addonsdk.shared.AddonDescriptor;
-import com.cake.clockify.addonsdk.shared.middleware.Middleware;
-import com.cake.clockify.addonsdk.shared.middleware.MiddlewareChain;
 import com.cake.clockify.addonsdk.shared.model.Manifest;
-import com.cake.clockify.addonsdk.shared.request.HttpRequest;
-import com.cake.clockify.addonsdk.shared.response.HttpResponse;
 import com.google.gson.Gson;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import static com.cake.clockify.Utils.getMockedServletRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,92 +29,106 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AddonTests {
 
     @Test
+    @SneakyThrows
     public void testAddonHandlers() {
-        AddonDescriptor descriptor = Utils.getSampleDescriptor();
-        ClockifyAddon clockifyAddon = new ClockifyAddon(descriptor);
+        ClockifyManifest manifest = Utils.getSampleManifest();
+        ClockifyAddon addon = new ClockifyAddon(manifest);
 
         ClockifyComponent component = Utils.getSampleComponent();
-        clockifyAddon.registerComponent(component, (r) -> HttpResponse.builder()
-                .body("component")
-                .build());
+        addon.registerComponent(component, (r, s) -> {
+            s.getWriter().write("component");
+            s.setStatus(200);
+        });
 
         ClockifyWebhook webhook = Utils.getSampleWebhook();
-        clockifyAddon.registerWebhook(webhook, (r) -> HttpResponse.builder()
-                .body("webhook")
-                .build());
+        addon.registerWebhook(webhook, (r, s) -> {
+            s.getWriter().write("webhook");
+            s.setStatus(200);
+        });
 
         ClockifyLifecycleEvent lifecycleEventInstalled = Utils.getSampleInstalledEvent();
-        clockifyAddon.registerLifecycleEvent(lifecycleEventInstalled, (r) -> HttpResponse.builder()
-                .body("lifecycle")
-                .build());
+        addon.registerLifecycleEvent(lifecycleEventInstalled, (r, s) -> {
+            s.getWriter().write("lifecycle");
+            s.setStatus(200);
+        });
 
+        StringWriter writer = new StringWriter();
 
-        HttpResponse componentResponse = clockifyAddon.handle(HttpRequest.builder()
-                .method("GET")
-                .uri(descriptor.baseUrl() + component.getPath())
-                .build());
-        assertEquals("component", componentResponse.getBody());
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 
-        HttpResponse webhookResponse = clockifyAddon.handle(HttpRequest.builder()
-                .method("POST")
-                .uri(descriptor.baseUrl() + webhook.getPath())
-                .build());
-        assertEquals("webhook", webhookResponse.getBody());
+        Mockito.doNothing().when(response).setStatus(200);
+        Mockito.when(response.getWriter()).thenReturn(new PrintWriter(writer, true));
 
-        HttpResponse lifecycleResponse = clockifyAddon.handle(HttpRequest.builder()
-                .method("POST")
-                .uri(descriptor.baseUrl() + lifecycleEventInstalled.getPath())
-                .build());
-        assertEquals("lifecycle", lifecycleResponse.getBody());
+        addon.handle(getMockedServletRequest("GET", component.getPath()), response);
 
-        HttpResponse manifestResponse = clockifyAddon.handle(HttpRequest.builder()
-                .method("GET")
-                .uri(descriptor.baseUrl() + "/manifest")
-                .build());
-        Manifest manifest = new Gson().fromJson(manifestResponse.getBody(), Manifest.class);
-        assertEquals(descriptor.key(), manifest.getKey());
+        assertEquals("component", writer.getBuffer().toString());
+        writer.getBuffer().delete(0, writer.getBuffer().length());
+
+        addon.handle(getMockedServletRequest("POST", webhook.getPath()), response);
+
+        assertEquals("webhook", writer.getBuffer().toString());
+        writer.getBuffer().delete(0, writer.getBuffer().length());
+
+        addon.handle(getMockedServletRequest("POST", lifecycleEventInstalled.getPath()), response);
+
+        assertEquals("lifecycle", writer.getBuffer().toString());
+        writer.getBuffer().delete(0, writer.getBuffer().length());
+
+        addon.handle(getMockedServletRequest("GET", "/manifest"), response);
+
+        assertEquals(manifest.getKey(), new Gson().fromJson(writer.getBuffer().toString(), Manifest.class).getKey());
     }
 
     @Test
+    @SneakyThrows
     public void testMiddlewareUsage() {
-        AddonDescriptor descriptor = Utils.getSampleDescriptor();
-        ClockifyAddon clockifyAddon = new ClockifyAddon(descriptor);
+        ClockifyManifest manifest = Utils.getSampleManifest();
+        ClockifyAddon clockifyAddon = new ClockifyAddon(manifest);
 
         ClockifyComponent component = Utils.getSampleComponent();
-        clockifyAddon.registerComponent(component, (r) -> HttpResponse.builder().build());
+        clockifyAddon.registerComponent(component, (r, s) -> {
+        });
 
         SampleMiddleware middleware1 = new SampleMiddleware();
         SampleMiddleware middleware2 = new SampleMiddleware() {
             @Override
-            public HttpResponse apply(HttpRequest request, MiddlewareChain chain) {
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
+
                 used = true;
-                return HttpResponse.builder().body("intercepted").build();
+                response.getWriter().write("intercepted");
             }
         };
         SampleMiddleware middleware3 = new SampleMiddleware();
 
-        clockifyAddon.useMiddleware(middleware1);
-        clockifyAddon.useMiddleware(middleware2);
-        clockifyAddon.useMiddleware(middleware3);
+        clockifyAddon.addFilter(middleware1);
+        clockifyAddon.addFilter(middleware2);
+        clockifyAddon.addFilter(middleware3);
 
-        HttpResponse response = clockifyAddon.handle(HttpRequest.builder()
-                .method("GET")
-                .uri(descriptor.baseUrl() + component.getPath())
-                .build());
+        StringWriter writer = new StringWriter();
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+
+        Mockito.doNothing().when(response).setStatus(200);
+        Mockito.when(response.getWriter()).thenReturn(new PrintWriter(writer));
+
+        clockifyAddon.handle(getMockedServletRequest("GET", component.getPath()), response);
 
         assertTrue(middleware1.used);
         assertTrue(middleware2.used);
         assertFalse(middleware3.used);
 
-        assertEquals("intercepted", response.getBody());
+        assertEquals("intercepted", writer.getBuffer().toString());
     }
 
-    private static class SampleMiddleware implements Middleware {
+    private static class SampleMiddleware implements Filter {
         boolean used = false;
+
         @Override
-        public HttpResponse apply(HttpRequest request, MiddlewareChain chain) {
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                throws IOException, ServletException {
             used = true;
-            return chain.apply(request);
+            chain.doFilter(request, response);
         }
     }
 }

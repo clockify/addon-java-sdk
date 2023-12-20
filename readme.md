@@ -27,7 +27,7 @@ The project is organized in two modules:
 ## Annotation processor
 The annotation processor module is only used at build-time. It generates helper interfaces based on the manifest schema.
 
-Clockify manifest components make use of the ```@ExtendClockifyManifest(definition = )``` annotation in order to let the annotation processor know
+Clockify manifest makes use of the ```@ExtendClockifyManifest``` annotation in order to let the annotation processor know
 that it should generate interfaces for this class's builder according the specified definition.
 
 For instance, suppose we have the following definition inside the json schema:
@@ -48,11 +48,6 @@ For instance, suppose we have the following definition inside the json schema:
     }
     ...
 }
-```
-By annotating the ClockifyLifecycleEvent class with:
-```java
-@ExtendClockifyManifest(definition = "lifecycle")
-public class ClockifyLifecycleEvent extends LifecycleEvent
 ```
 
 The annotation processor will generate the following interfaces:
@@ -84,7 +79,6 @@ public interface ClockifyLifecycleEventBuilderBuildStep {
 
 The above interfaces, combined with a Lombok builder result in a straightforward step-builder implementation.
 ```java
-@ExtendClockifyManifest(definition = "lifecycle")
 public class ClockifyLifecycleEvent extends LifecycleEvent {
 
     @Builder
@@ -126,21 +120,24 @@ The product-specific layers will allow for more granular configuration and valid
 - Product specific validation & helpers
 - Centralized definition and handling of all the components of the addon
 - Easy to get started by either relying on the embedded webserver or serving the provided servlet class through a web framework
-- Middleware support
 
 ### Getting started
-First, define an addon descriptor:
+First, create an addon instance:
 ```java
-AddonDescriptor descriptor = new AddonDescriptor("key", "name", "description", "baseUrl");
+ClockifyAddon clockifyAddon = new ClockifyAddon(
+        ClockifyManifest.builder()
+        .key(key)
+        .name(name)
+        .baseUrl(baseUrl)
+        .requireBasicPlan()
+        .scopes(Collections.emptyList())
+        .build()
+        );
 ```
+
 The baseUrl must be a full URI, with the scheme, host and path.
 
-Then, create an addon instance:
-```java
-ClockifyAddon clockifyAddon = new ClockifyAddon(descriptor);
-```
-
-Finally, register any webhook / lifecycle / component / setting or custom HTTP handler on the addon:
+Then, register any webhook / lifecycle / component / setting or custom endpoints on the addon.
 
 Each object has its own builder class which by using the step builder pattern guides through the instantiation of the object and makes it easy to distinguish between required and optional properties.
 ```java
@@ -173,13 +170,10 @@ clockifyAddon.registerComponent(component, handler);
 ...
 ```
 
-A handler receiving a custom subclass of HttpRequest can also be used - a middleware adapter must be implemented in this case.
+Addon-specific filters can be registered for requests that will be handled through the addon's servlet.
 ```java
-Middleware middleware = ...; // middleware that takes HttpRequest, adapts it to CustomHttpRequest and proceeds with the chain
-clockifyAddon.useMiddleware(middleware);
-
-RequestHandler<CustomHttpRequest> handler = new RequestHandler() { ... }
-clockifyAddon.registerComponent(component, handler);
+Filter filter = ...; // servlet filter
+clockifyAddon.addFilter(filter);
 ```
 
 ### Serving the addon
@@ -224,27 +218,3 @@ If the handler is being registered through either a component / lifecycle / webh
 - webhook -> POST
 
 Each addon implementation will only accept its own component / lifecycle / webhook subclasses.
-
-### Request & Response objects
-The RequestHandlers accept subclasses of HttpRequest as arguments and return HttpResponse responses.
-These classes serve as basic data objects, and are used to decouple the handlers from the servlet classes.
-
-If the RequestHandler accepts a subclass of HttpRequest, an unsafe cast will be performed.
-The HttpRequest should be adapted to the custom subclass through a middleware prior to the handler being called.
-
-### Middlewares
-Middlewares accept HttpRequest and MiddlewareChain arguments and return HttpResponse responses.
-
-They can be used to:
-- intercept requests
-- implement authentication mechanism
-- decorate requests
-- adapt requests to custom request subclasses
-- etc
-
-Every middleware will be invoked once per request, in the order it was registered.
-
-To register a middleware, simply call the 'useMiddleware' method on the addon:
-```java
-clockifyAddon.useMiddleware(middleware);
-```
