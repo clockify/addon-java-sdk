@@ -23,7 +23,7 @@ public class ClockifyManifest extends Manifest {
                                List<String> scopes,
                                Object settings) {
         super(
-                "1.1",
+                "1.2",
                 key,
                 name,
                 description,
