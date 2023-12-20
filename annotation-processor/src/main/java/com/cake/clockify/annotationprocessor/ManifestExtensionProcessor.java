@@ -30,12 +30,7 @@ public class ManifestExtensionProcessor extends javax.annotation.processing.Abst
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement annotation : annotations) {
-            try {
-                processAnnotation(annotation, roundEnv);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+            processAnnotation(annotation, roundEnv);
         }
 
         return true;
@@ -43,28 +38,22 @@ public class ManifestExtensionProcessor extends javax.annotation.processing.Abst
 
     @SneakyThrows
     private void processAnnotation(TypeElement annotation, RoundEnvironment roundEnv) {
-        String annotationName = annotation.getQualifiedName().toString();
-
         Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(annotation);
         List<JavaFile> files = new LinkedList<>();
 
         for (Element element : elements) {
-            ExtendClockifyManifest ann = element.getAnnotation(ExtendClockifyManifest.class);
-
             DeclaredType type = (DeclaredType) element.asType();
-            Processor processor = new ClockifyManifestProcessor(type, ann.definition());
 
-            if (isSupported(processor, annotationName)) {
-                files.addAll(processor.process());
+            try {
+                files.addAll(new ClockifyManifestProcessor(type).process());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
 
         for (JavaFile file : files) {
             file.writeTo(processingEnv.getFiler());
         }
-    }
-
-    private boolean isSupported(Processor processor, String annotationName) {
-        return processor.getSupportedAnnotation().getCanonicalName().equals(annotationName);
     }
 }

@@ -2,6 +2,8 @@ package com.cake.clockify.annotationprocessor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.TypeName;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -12,7 +14,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_PREFIX;
 import static com.cake.clockify.annotationprocessor.Constants.MANIFEST_FILE;
 import static com.cake.clockify.annotationprocessor.Constants.REGEX_METHOD_NAME_SPLIT;
 import static com.cake.clockify.annotationprocessor.Constants.REGEX_UPPER_CASE_SPLIT;
@@ -22,9 +26,12 @@ import static java.util.Collections.emptyList;
 public class Utils {
     private static final Locale LOCALE = Locale.US;
 
+    private static final Map<String, String> DEFINITION_CLASSNAME_MAPPINGS = Map.of(
+            "lifecycle", "lifecycleEvent"
+    );
+
     @SneakyThrows
-    public static JsonNode readManifestDefinition() {
-        ObjectMapper mapper = new ObjectMapper();
+    public static JsonNode readManifestDefinition(ObjectMapper mapper) {
         InputStream is = Utils.class.getClassLoader().getResourceAsStream(MANIFEST_FILE);
         return mapper.readTree(is);
     }
@@ -38,7 +45,7 @@ public class Utils {
 
     public static String toMethodName(String value) {
         List<String> parts = new LinkedList<>();
-        for (String part: value.split(REGEX_METHOD_NAME_SPLIT)) {
+        for (String part : value.split(REGEX_METHOD_NAME_SPLIT)) {
             // all uppercase values should not be split
             part = normalizeUppercaseOnlyValue(part);
 
@@ -90,38 +97,48 @@ public class Utils {
     }
 
     public static List<String> getEnumValuesFromNode(JsonNode node) {
-        if (!node.has("enum")) {
+        if (!node.has(NodeConstants.ENUM)) {
             return emptyList();
         }
 
         List<String> values = new LinkedList<>();
-        node.get("enum").forEach(n -> values.add(n.asText()));
+        node.get(NodeConstants.ENUM).forEach(n -> values.add(n.asText()));
         return values;
-    }
-
-    public static List<String> getOptionalProperties(List<String> requiredProperties,
-                                                     List<String> allProperties) {
-        return allProperties.stream()
-                .filter(p -> !requiredProperties.contains(p))
-                .toList();
     }
 
     public static boolean hasDefinitionRef(JsonNode node) {
         if (node == null) {
             return false;
         }
-        return node.has("$ref");
+        return node.has(NodeConstants.REF);
     }
 
     public static String getDefinitionRef(JsonNode node) {
-        String definition = node.get("$ref").asText();
+        String definition = node.get(NodeConstants.REF).asText();
         return definition.substring(definition.lastIndexOf("/") + 1);
     }
 
-    public static String getNodeType(JsonNode node) {
-        return node.has("type")
-                ? node.get("type").asText()
-                : "object";
+    public static JsonNode getDefinitionNode(JsonNode manifest, JsonNode node) {
+        return manifest.get(NodeConstants.DEFINITIONS).get(getDefinitionRef(node));
+    }
+
+    public static String getNodeType(JsonNode node, JsonNode definitions) {
+        if (node.has(NodeConstants.TYPE)) {
+            return node.get(NodeConstants.TYPE).asText();
+        }
+
+        if (hasDefinitionRef(node)) {
+            String ref = getDefinitionRef(node);
+            if ("url".equals(ref)) {
+                return NodeConstants.STRING;
+            }
+
+            if (definitions.has(ref)) {
+                return getNodeType(definitions.get(ref), definitions);
+            }
+        }
+
+        return NodeConstants.STRING;
     }
 
     public static String[] getPackageAndClassNames(DeclaredType type) {
@@ -131,5 +148,30 @@ public class Utils {
         String packageName = qualifiedName.substring(0, lastDot);
         String className = qualifiedName.substring(lastDot + 1);
         return new String[] {packageName, className};
+    }
+
+    /**
+     * @param packageName
+     * @param definition
+     * @return the typename for the given definition, after applying name mappings
+     */
+    public static TypeName getDefinitionTypeName(String packageName, String definition) {
+        return ClassName.get(packageName, getDefinitionSimpleClassName(definition));
+    }
+
+    /**
+     * @param definition
+     * @return the class name for the definition, after applying name mappings
+     */
+    public static String getDefinitionSimpleClassName(String definition) {
+        String classNameSuffix = DEFINITION_CLASSNAME_MAPPINGS.getOrDefault(definition, definition);
+        return Utils.toClassName(CLOCKIFY_PREFIX + Constants.DELIMITER_NAME_PARTS + classNameSuffix);
+    }
+
+    public static String getPropertyDescription(JsonNode node) {
+        if (node.has(NodeConstants.DESCRIPTION)) {
+            return node.get(NodeConstants.DESCRIPTION).asText();
+        }
+        return "";
     }
 }

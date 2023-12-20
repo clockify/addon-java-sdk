@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "version": "1.0.1",
+  "version": "1.2",
   "definitions": {
     "url": {
       "format": "uri",
@@ -97,6 +97,42 @@
       "required": [
         "path",
         "type"
+      ]
+    },
+    "scope": {
+      "description": "Api scope used by addon.",
+      "type": "string",
+      "enum": [
+        "CLIENT_READ",
+        "CLIENT_WRITE",
+        "PROJECT_READ",
+        "PROJECT_WRITE",
+        "TAG_READ",
+        "TAG_WRITE",
+        "TASK_READ",
+        "TASK_WRITE",
+        "TIME_ENTRY_READ",
+        "TIME_ENTRY_WRITE",
+        "EXPENSE_READ",
+        "EXPENSE_WRITE",
+        "INVOICE_READ",
+        "INVOICE_WRITE",
+        "USER_READ",
+        "USER_WRITE",
+        "GROUP_READ",
+        "GROUP_WRITE",
+        "WORKSPACE_READ",
+        "WORKSPACE_WRITE",
+        "CUSTOM_FIELDS_READ",
+        "CUSTOM_FIELDS_WRITE",
+        "APPROVAL_READ",
+        "APPROVAL_WRITE",
+        "SCHEDULING_READ",
+        "SCHEDULING_WRITE",
+        "REPORTS_READ",
+        "REPORTS_WRITE",
+        "TIME_OFF_READ",
+        "TIME_OFF_WRITE"
       ]
     },
     "component": {
@@ -198,7 +234,9 @@
             "DROPDOWN_SINGLE",
             "DROPDOWN_MULTIPLE",
             "CHECKBOX",
-            "LINK"
+            "LINK",
+            "USER_DROPDOWN_SINGLE",
+            "USER_DROPDOWN_MULTIPLE"
           ]
         },
         "key": {
@@ -214,7 +252,7 @@
           ],
           "minLength": 1,
           "minItems": 1,
-          "description": "Value of the setting. Value must be of type 'setting.type' e.g."
+          "description": "Value of the setting. Value must be of type 'setting.type' e.g. For USER_DROPDOWN, value will be the user ID of the installer upon installation."
         },
         "allowedValues": {
           "type": "array",
@@ -350,6 +388,17 @@
       "type": "string",
       "minLength": 1,
       "description": "Path to addon endpoint designated for serving addon hosted settings. Path is just a part of the url from which addon hosted settings are served. Full url is constructed by concatenating addon 'baseUrl' and path."
+    },
+    "minimalSubscriptionPlan": {
+      "type": "string",
+      "description": "Specifies Clockify's minimal subscription plan required by addon.",
+      "enum": [
+        "FREE",
+        "BASIC",
+        "STANDARD",
+        "PRO",
+        "ENTERPRISE"
+      ]
     }
   },
   "properties": {
@@ -380,6 +429,24 @@
       "example": [
         "https://addon-address.example.com/"
       ]
+    },
+    "minimalSubscriptionPlan": {
+      "$ref": "#/definitions/minimalSubscriptionPlan",
+      "description": "Minimal Clockify's subscription plan that is required for addon. This plan is used when checking if user's current plan is at least equal to the plan required by addon.",
+      "example": [
+        "PRO"
+      ]
+    },
+    "scopes": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "API scopes that addon is using.",
+      "items": {
+        "$ref": "#/definitions/scope",
+        "example": [
+          "PROJECT_READ"
+        ]
+      }
     },
     "description": {
       "type": "string",
@@ -427,6 +494,8 @@
   "required": [
     "key",
     "name",
-    "baseUrl"
+    "baseUrl",
+    "minimalSubscriptionPlan",
+    "scopes"
   ]
 }
