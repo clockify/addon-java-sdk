@@ -6,7 +6,7 @@
 
     <groupId>com.cake.clockify</groupId>
     <artifactId>addon-sdk-annotation-processor</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.6</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.1</version>
         </dependency>
 
         <dependency>
