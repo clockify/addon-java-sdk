@@ -2,26 +2,36 @@ package com.cake.clockify;
 
 import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyLifecycleEvent;
+import com.cake.clockify.addonsdk.clockify.model.ClockifyManifest;
 import com.cake.clockify.addonsdk.clockify.model.ClockifySetting;
 import com.cake.clockify.addonsdk.clockify.model.ClockifySettings;
 import com.cake.clockify.addonsdk.clockify.model.ClockifySettingsHeader;
 import com.cake.clockify.addonsdk.clockify.model.ClockifySettingsTab;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyWebhook;
-import com.cake.clockify.addonsdk.shared.AddonDescriptor;
+import jakarta.servlet.http.HttpServletRequest;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Map;
 
 public class Utils {
 
-    public static AddonDescriptor getSampleDescriptor() {
-        return new AddonDescriptor(
-                "key",
-                "name",
-                "description",
-                "http://localhost:8080",
-                null
-        );
+    public static HttpServletRequest getMockedServletRequest(String method, String path) {
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getMethod()).thenReturn(method);
+        Mockito.when(request.getRequestURI()).thenReturn(path);
+        return request;
+    }
+
+    public static ClockifyManifest getSampleManifest() {
+        return ClockifyManifest.builder()
+                .key("key")
+                .name("name")
+                .baseUrl("http://localhost:8080")
+                .requireFreePlan()
+                .scopes(List.of())
+                .description("description")
+                .build();
     }
 
     public static ClockifyComponent getSampleComponent() {

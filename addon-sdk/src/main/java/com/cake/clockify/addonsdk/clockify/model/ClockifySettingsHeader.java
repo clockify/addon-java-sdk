@@ -1,11 +1,9 @@
 package com.cake.clockify.addonsdk.clockify.model;
 
 import com.cake.clockify.addonsdk.shared.model.SettingHeader;
-import com.cake.clockify.annotationprocessor.clockify.ExtendClockifyManifest;
 import lombok.Builder;
 import lombok.NonNull;
 
-@ExtendClockifyManifest(definition = "settingsHeader")
 public class ClockifySettingsHeader extends SettingHeader {
 
     @Builder

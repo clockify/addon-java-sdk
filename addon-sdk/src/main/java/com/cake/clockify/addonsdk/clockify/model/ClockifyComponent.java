@@ -1,13 +1,11 @@
 package com.cake.clockify.addonsdk.clockify.model;
 
 import com.cake.clockify.addonsdk.shared.model.Component;
-import com.cake.clockify.annotationprocessor.clockify.ExtendClockifyManifest;
 import lombok.Builder;
 import lombok.NonNull;
 
 import java.util.Map;
 
-@ExtendClockifyManifest(definition = "component")
 public class ClockifyComponent extends Component {
 
     @Builder
