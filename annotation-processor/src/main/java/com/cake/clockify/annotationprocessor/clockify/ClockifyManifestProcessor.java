@@ -4,6 +4,7 @@ import com.cake.clockify.annotationprocessor.NodeConstants;
 import com.cake.clockify.annotationprocessor.Utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.squareup.javapoet.JavaFile;
 
 import javax.lang.model.type.DeclaredType;
@@ -45,6 +46,14 @@ public class ClockifyManifestProcessor {
                 );
 
                 javaFiles.addAll(processor.process());
+            } else if (isEnumDefinition(node)) {
+                EnumConstantsProcessor processor = new EnumConstantsProcessor(
+                        manifest,
+                        packageName,
+                        definition
+                );
+
+                javaFiles.addAll(processor.process());
             }
         });
 
@@ -57,5 +66,10 @@ public class ClockifyManifestProcessor {
 
     private boolean isObjectDefinition(JsonNode node) {
         return NodeConstants.OBJECT.equals(Utils.getNodeType(node, manifest.get(NodeConstants.DEFINITIONS)));
+    }
+
+    private boolean isEnumDefinition(JsonNode node) {
+        String type = Utils.getNodeType(node, manifest.get(NodeConstants.DEFINITIONS));
+        return NodeConstants.STRING.equals(type) && node.get(NodeConstants.ENUM) instanceof ArrayNode;
     }
 }
