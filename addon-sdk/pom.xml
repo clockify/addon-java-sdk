@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.cake.clockify</groupId>
             <artifactId>addon-sdk-annotation-processor</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.7</version>
         </dependency>
 
         <dependency>

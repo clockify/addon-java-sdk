@@ -130,7 +130,10 @@ ClockifyAddon clockifyAddon = new ClockifyAddon(
         .name(name)
         .baseUrl(baseUrl)
         .requireBasicPlan()
-        .scopes(Collections.emptyList())
+        .scopes(List.of(
+            ClockifyScope.PROJECT_READ,
+            ClockifyScope.PROJECT_WRITE
+        ))
         .build()
         );
 ```
