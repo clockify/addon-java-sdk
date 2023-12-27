@@ -179,6 +179,19 @@ Filter filter = ...; // servlet filter
 clockifyAddon.addFilter(filter);
 ```
 
+### Validating Clockify tokens
+[https://dev-docs.marketplace.cake.com/development-toolkit/authentication-and-authorization/](https://dev-docs.marketplace.cake.com/development-toolkit/authentication-and-authorization/)
+
+ClockifySignatureParser can be used to verify that the received tokens have been signed by Clockify:
+```java
+RSAPublicKey publicKey = ...;
+ClockifySignatureParser parser = new ClockifySignatureParser("{manifest-key}", publicKey);
+
+String token = ...;
+Map<String, Object> claims = parser.parseClaims(token);
+String workspaceId = (String) claims.get(ClockifySignatureParser.CLAIM_WORKSPACE_ID);
+```
+
 ### Serving the addon
 #### Using the embedded jetty server
 ```java
