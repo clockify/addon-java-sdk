@@ -17,6 +17,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_MANIFESTS;
+
 @AutoService(javax.annotation.processing.Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_18)
 @NoArgsConstructor
@@ -44,7 +46,7 @@ public class ManifestExtensionProcessor extends javax.annotation.processing.Abst
         for (Element element : elements) {
             DeclaredType type = (DeclaredType) element.asType();
 
-            for (String manifestPath: Utils.getClockifyManifestPaths()) {
+            for (String manifestPath: CLOCKIFY_MANIFESTS) {
                 try {
                     files.addAll(new ClockifyManifestProcessor(type, manifestPath).process());
                 } catch (Exception e) {
