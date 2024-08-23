@@ -10,10 +10,6 @@ import lombok.SneakyThrows;
 
 import javax.lang.model.type.DeclaredType;
 import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_PREFIX;
-import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_MANIFESTS_DIR;
 import static com.cake.clockify.annotationprocessor.Constants.REGEX_METHOD_NAME_SPLIT;
 import static com.cake.clockify.annotationprocessor.Constants.REGEX_UPPER_CASE_SPLIT;
 import static java.util.Collections.emptyList;
@@ -33,17 +28,6 @@ public class Utils {
     private static final Map<String, String> DEFINITION_CLASSNAME_MAPPINGS = Map.of(
             "lifecycle", "lifecycleEvent"
     );
-
-    @SneakyThrows
-    public static List<String> getClockifyManifestPaths() {
-        URL url = Utils.class.getClassLoader().getResource(CLOCKIFY_MANIFESTS_DIR);
-        Path path = Paths.get(url.toURI());
-        try (var files = Files.walk(path, 1)) {
-            return files.filter(p -> p.toFile().isFile())
-                    .map(p -> CLOCKIFY_MANIFESTS_DIR + "/" + p.getFileName().toString())
-                    .toList();
-        }
-    }
 
     @SneakyThrows
     public static JsonNode readManifestDefinition(ObjectMapper mapper, String manifestPath) {
