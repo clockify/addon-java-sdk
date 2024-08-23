@@ -8,9 +8,9 @@ import java.io.IOException;
 
 public class AddonServlet extends HttpServlet {
 
-    private final Addon<?, ?, ?, ?> addon;
+    private final Addon<?> addon;
 
-    public AddonServlet(Addon<?, ?, ?, ?> addon) {
+    public AddonServlet(Addon<?> addon) {
         this.addon = addon;
     }
 

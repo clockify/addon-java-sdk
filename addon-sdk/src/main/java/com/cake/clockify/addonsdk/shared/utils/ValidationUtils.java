@@ -14,17 +14,4 @@ public class ValidationUtils {
                 && path.charAt(0) == '/'
                 && path.charAt(path.length() - 1) != '/';
     }
-
-    public static boolean isValidBaseUrl(String url) {
-        if (url == null) {
-            return false;
-        }
-
-        try {
-            URI uri = new URL(url).toURI();
-            return uri.getQuery() == null;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

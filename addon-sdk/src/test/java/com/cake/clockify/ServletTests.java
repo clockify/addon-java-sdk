@@ -1,7 +1,7 @@
 package com.cake.clockify;
 
 import com.cake.clockify.addonsdk.clockify.ClockifyAddon;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyComponent;
 import com.cake.clockify.addonsdk.shared.AddonServlet;
 import com.cake.clockify.addonsdk.shared.EmbeddedServer;
 import lombok.SneakyThrows;

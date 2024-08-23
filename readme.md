@@ -77,26 +77,7 @@ public interface ClockifyLifecycleEventBuilderBuildStep {
 }
 ```
 
-The above interfaces, combined with a Lombok builder result in a straightforward step-builder implementation.
-```java
-public class ClockifyLifecycleEvent extends LifecycleEvent {
-
-    @Builder
-    protected ClockifyLifecycleEvent(@NonNull String type, @NonNull String path) {
-        super(type, path);
-    }
-
-    public static ClockifyLifecycleEventBuilderPathStep builder() {
-        return new ClockifyLifecycleEventBuilder();
-    }
-
-    private static class ClockifyLifecycleEventBuilder implements
-            ClockifyLifecycleEventBuilderTypeStep,
-            ClockifyLifecycleEventBuilderPathStep,
-            ClockifyLifecycleEventBuilderBuildStep {
-    }
-}
-```
+The above interfaces will result in a straightforward step-builder implementation.
 
 Each required property will have its own step, and each step will only be able to set one property.
 ```java
@@ -125,7 +106,7 @@ The product-specific layers will allow for more granular configuration and valid
 First, create an addon instance:
 ```java
 ClockifyAddon clockifyAddon = new ClockifyAddon(
-        ClockifyManifest.builder()
+        ClockifyManifest.v1_2Builder()
         .key(key)
         .name(name)
         .baseUrl(baseUrl)

@@ -1,11 +1,10 @@
 package com.cake.clockify;
 
 import com.cake.clockify.addonsdk.clockify.ClockifyAddon;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyLifecycleEvent;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyManifest;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyWebhook;
-import com.cake.clockify.addonsdk.shared.model.Manifest;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyComponent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyLifecycleEvent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyWebhook;
 import com.google.gson.Gson;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -76,7 +75,7 @@ public class AddonTests {
 
         addon.handle(getMockedServletRequest("GET", "/manifest"), response);
 
-        assertEquals(manifest.getKey(), new Gson().fromJson(writer.getBuffer().toString(), Manifest.class).getKey());
+        assertEquals(manifest.getKey(), new Gson().fromJson(writer.getBuffer().toString(), com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyManifest.class).getKey());
     }
 
     @Test
