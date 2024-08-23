@@ -1,13 +1,13 @@
 package com.cake.clockify;
 
-import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyLifecycleEvent;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyManifest;
-import com.cake.clockify.addonsdk.clockify.model.ClockifySetting;
-import com.cake.clockify.addonsdk.clockify.model.ClockifySettings;
-import com.cake.clockify.addonsdk.clockify.model.ClockifySettingsHeader;
-import com.cake.clockify.addonsdk.clockify.model.ClockifySettingsTab;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyWebhook;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyComponent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyLifecycleEvent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifySetting;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifySettings;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifySettingsHeader;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifySettingsTab;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyWebhook;
 import jakarta.servlet.http.HttpServletRequest;
 import org.mockito.Mockito;
 
@@ -24,7 +24,7 @@ public class Utils {
     }
 
     public static ClockifyManifest getSampleManifest() {
-        return ClockifyManifest.builder()
+        return ClockifyManifest.v1_2Builder()
                 .key("key")
                 .name("name")
                 .baseUrl("http://localhost:8080")
@@ -68,7 +68,7 @@ public class Utils {
 
     public static ClockifySettings getSampleSettings() {
         return ClockifySettings.builder()
-                .settingsTabs(List.of(
+                .tabs(List.of(
                         ClockifySettingsTab.builder()
                                 .id("id")
                                 .name("name")

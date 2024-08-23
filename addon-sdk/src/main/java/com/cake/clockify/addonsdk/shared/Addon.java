@@ -1,10 +1,5 @@
 package com.cake.clockify.addonsdk.shared;
 
-import com.cake.clockify.addonsdk.shared.model.Component;
-import com.cake.clockify.addonsdk.shared.model.LifecycleEvent;
-import com.cake.clockify.addonsdk.shared.model.Manifest;
-import com.cake.clockify.addonsdk.shared.model.Settings;
-import com.cake.clockify.addonsdk.shared.model.Webhook;
 import com.cake.clockify.addonsdk.shared.utils.Utils;
 import com.cake.clockify.addonsdk.shared.utils.ValidationUtils;
 import com.google.gson.Gson;
@@ -26,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public abstract class Addon<W extends Webhook, C extends Component, L extends LifecycleEvent, S extends Settings>
-        implements RequestHandler {
+public abstract class Addon<M> implements RequestHandler {
     public static final String PATH_MANIFEST = "/manifest";
 
     private static final String ERROR_PATH_ALREADY_REGISTERED = "Handler has already been registered.";
@@ -35,22 +29,18 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
     public static final String HTTP_POST = "POST";
 
     @Getter
-    protected final Manifest manifest;
+    protected final M manifest;
 
     protected final Gson gson;
 
     private final Map<Request, RequestHandler> requestHandlers = new HashMap<>();
     private final List<Filter> filters = new LinkedList<>();
 
-    protected Addon(@NonNull Manifest manifest) {
+    protected Addon(@NonNull M manifest) {
         this(manifest, PATH_MANIFEST);
     }
 
-    protected Addon(@NonNull Manifest manifest, String manifestPath) {
-        if (!ValidationUtils.isValidBaseUrl(manifest.getBaseUrl())) {
-            throw new ValidationException("The supplied baseUrl is not valid");
-        }
-
+    protected Addon(@NonNull M manifest, String manifestPath) {
         this.gson = new Gson();
         this.manifest = manifest;
 
@@ -91,26 +81,6 @@ public abstract class Addon<W extends Webhook, C extends Component, L extends Li
         }
 
         requestHandlers.put(key, handler);
-    }
-
-    public void registerWebhook(W webhook, RequestHandler handler) {
-        registerHandler(webhook.getPath(), HTTP_POST, handler);
-        manifest.addWebhook(webhook);
-    }
-
-    public void registerLifecycleEvent(L lifecycleEvent, RequestHandler handler) {
-        registerHandler(lifecycleEvent.getPath(), HTTP_POST, handler);
-        manifest.addLifecycleEvent(lifecycleEvent);
-    }
-
-    public void registerComponent(C component, RequestHandler handler) {
-        registerHandler(component.getPath(), HTTP_GET, handler);
-        manifest.addComponent(component);
-    }
-
-    public void registerCustomSettings(String path, RequestHandler handler) {
-        registerHandler(path, HTTP_GET, handler);
-        manifest.setCustomSettingsPath(path);
     }
 
     public List<Request> getRegisteredRequests() {

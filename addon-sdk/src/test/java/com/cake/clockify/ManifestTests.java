@@ -1,10 +1,10 @@
 package com.cake.clockify;
 
 import com.cake.clockify.addonsdk.clockify.ClockifyAddon;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyComponent;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyLifecycleEvent;
 import com.cake.clockify.addonsdk.clockify.model.ClockifyManifest;
-import com.cake.clockify.addonsdk.clockify.model.ClockifyWebhook;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyComponent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyLifecycleEvent;
+import com.cake.clockify.addonsdk.clockify.model.v1_2.ClockifyWebhook;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
