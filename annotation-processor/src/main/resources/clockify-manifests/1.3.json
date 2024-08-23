@@ -1,0 +1,480 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "version": "1.3",
+  "definitions": {
+    "url": {
+      "format": "uri",
+      "pattern": "^https?://"
+    },
+    "webhook": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": [
+            "NEW_PROJECT",
+            "NEW_TASK",
+            "NEW_CLIENT",
+            "NEW_TAG",
+            "NEW_TIMER_STARTED",
+            "TIMER_STOPPED",
+            "TIME_ENTRY_UPDATED",
+            "TIME_ENTRY_DELETED",
+            "NEW_TIME_ENTRY",
+            "NEW_INVOICE",
+            "INVOICE_UPDATED",
+            "USER_JOINED_WORKSPACE",
+            "USER_DELETED_FROM_WORKSPACE",
+            "USER_DEACTIVATED_ON_WORKSPACE",
+            "USER_ACTIVATED_ON_WORKSPACE",
+            "NEW_APPROVAL_REQUEST",
+            "APPROVAL_REQUEST_STATUS_UPDATED",
+            "TIME_OFF_REQUESTED",
+            "TIME_OFF_REQUEST_APPROVED",
+            "TIME_OFF_REQUEST_REJECTED",
+            "TIME_OFF_REQUEST_WITHDRAWN",
+            "BALANCE_UPDATED"
+          ],
+          "description": "Clockify event that triggers webhook is sending to specified url. Url is constructed by concatenating addon 'baseUrl' and 'webhook.path'."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to addon endpoint designated for receiving webhooks from Clockify side. Path is just part of url to which webhook will be sent. Full url is constructed by concatenating addon 'baseUrl' and path.",
+          "example": [
+            "/clockify/webhooks",
+            "/webhooks/time-entries/",
+            "/triggers"
+          ]
+        }
+      },
+      "required": [
+        "event",
+        "path"
+      ]
+    },
+    "lifecycle": {
+      "description": "Specialized webhook triggered on addon lifecycle event.",
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to addon endpoint designated for receiving lifecycle hooks from Clockify side. Path is just part of url to which a lifecycle hook will be sent. Full url is constructed by concatenating addon 'baseUrl' and path."
+        },
+        "type": {
+          "type": "string",
+          "description": "Specifies addon lifecycle event you want to be notified by Clockify.",
+          "enum": [
+            "INSTALLED",
+            "DELETED",
+            "SETTINGS_UPDATED",
+            "STATUS_CHANGED"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "type"
+      ]
+    },
+    "scope": {
+      "description": "Api scope used by addon.",
+      "type": "string",
+      "enum": [
+        "CLIENT_READ",
+        "CLIENT_WRITE",
+        "PROJECT_READ",
+        "PROJECT_WRITE",
+        "TAG_READ",
+        "TAG_WRITE",
+        "TASK_READ",
+        "TASK_WRITE",
+        "TIME_ENTRY_READ",
+        "TIME_ENTRY_WRITE",
+        "EXPENSE_READ",
+        "EXPENSE_WRITE",
+        "INVOICE_READ",
+        "INVOICE_WRITE",
+        "USER_READ",
+        "USER_WRITE",
+        "GROUP_READ",
+        "GROUP_WRITE",
+        "WORKSPACE_READ",
+        "WORKSPACE_WRITE",
+        "CUSTOM_FIELDS_READ",
+        "CUSTOM_FIELDS_WRITE",
+        "APPROVAL_READ",
+        "APPROVAL_WRITE",
+        "SCHEDULING_READ",
+        "SCHEDULING_WRITE",
+        "REPORTS_READ",
+        "REPORTS_WRITE",
+        "TIME_OFF_READ",
+        "TIME_OFF_WRITE"
+      ]
+    },
+    "component": {
+      "type": "object",
+      "description": "UI element shown in Clockify web app. It serves as a placeholder for addon app i.e. addon app will be rendered inside Clockify component.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Specifies which kind of component will be rendered. If component is 'tab', it also comes with the name of Clockify page where 'tab' component will be rendered.",
+          "enum": [
+            "sidebar",
+            "widget",
+            "timeoff.tab",
+            "schedule.tab",
+            "approvals.tab",
+            "reports.tab",
+            "activity.tab",
+            "team.tab",
+            "projects.tab"
+          ]
+        },
+        "options": {
+          "type": "object",
+          "description": "If you want to define some component-specific options for component that holds your addon app, this is the place to define them."
+        },
+        "label": {
+          "type": "string",
+          "description": "Label of the component e.g. if component is 'tab', value of 'label' property will be shown in UI. Label is not required for WIDGET component type."
+        },
+        "accessLevel": {
+          "description": "Specifies who can access addon component. You can either choose to give access only to Clockify workspace admins, or everyone.",
+          "type": "string",
+          "enum": [
+            "ADMINS",
+            "EVERYONE"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to addon web app that will be rendered inside Clockify component. Path is part of the url from which component content will be served. Full url is constructed by concatenating addon 'baseUrl' and path."
+        },
+        "iconPath": {
+          "type": "string",
+          "description": "Path to addon hosted image which will serve as an icon for Clockify component. Path is part of the url from which the image will be served. Full url is constructed by concatenating addon 'baseUrl' and path."
+        },
+        "width": {
+          "type": "integer",
+          "description": "Defines rendered component width expressed in 'vw'. Applicable only to WIDGET components."
+        },
+        "height": {
+          "type": "integer",
+          "description": "Defines rendered component height expressed in 'vw'. Applicable only to WIDGET components."
+        }
+      },
+      "required": [
+        "type",
+        "accessLevel",
+        "path",
+        "label"
+      ]
+    },
+    "setting": {
+      "description": "This is definition of Clockify addon setting. Each setting must have id, name, type and value. Value and type of setting must be compatible.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Setting unique identifier."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Setting name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of setting. What is it used for, what does it affect, etc."
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Text that is shown in UI form field if setting has no value."
+        },
+        "accessLevel": {
+          "description": "Specifies who can access addon settings. You can either choose to give access only to Clockify workspace admins, or everyone.",
+          "type": "string",
+          "enum": [
+            "ADMINS",
+            "EVERYONE"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "description": "Specifies setting value type. Each type is shown differently in UI and value must be compatible with a specified type e.g. if 'type' is TXT, 'value' must be 'string', if 'type' is DROPDOWN, 'value' must be 'array'.",
+          "enum": [
+            "TXT",
+            "NUMBER",
+            "DROPDOWN_SINGLE",
+            "DROPDOWN_MULTIPLE",
+            "CHECKBOX",
+            "LINK",
+            "USER_DROPDOWN_SINGLE",
+            "USER_DROPDOWN_MULTIPLE"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "description": "Serves as key for setting that represents key-value pair e.g. if you have documentation addon which shows document corresponding to the Clockify page i.e. you need to match the Clockify page to the url of the document describing how to use that page. In that case, key would be 'Clockify page', and 'value' would be 'url of the document'."
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "array",
+            "boolean"
+          ],
+          "minLength": 1,
+          "minItems": 1,
+          "description": "Value of the setting. Value must be of type 'setting.type' e.g. For USER_DROPDOWN, value will be the user ID of the installer upon installation."
+        },
+        "allowedValues": {
+          "type": "array",
+          "description": "Required if 'setting.type' is DROPDOWN_SINGLE or DROPDOWN_MULTIPLE. Specifies which options will be shown in dropdown."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Toggles whether setting value is required or not."
+        },
+        "copyable": {
+          "type": "boolean",
+          "description": "Toggles whether setting value will be shown with 'Copy' button for easier copying."
+        },
+        "readOnly": {
+          "type": "boolean",
+          "description": "Toggles whether setting value is read-only i.e. setting value cannot be updated."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "accessLevel",
+        "type",
+        "value"
+      ]
+    },
+    "settingsHeader": {
+      "type": "object",
+      "description": "Setting banner that shows info about setting group or tab. It is shown as a blue banner before all settings contained in a given group.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Text shown in banner."
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "settingsGroup": {
+      "type": "object",
+      "description": "Serves as another level of hierarchy when defining settings. Group can be part of tabs, and one tab can contain multiple groups.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Group identifier."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Group title. Shown in UI."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the settings that given group contains."
+        },
+        "header": {
+          "$ref": "#/definitions/settingsHeader",
+          "description": "Banner with info text shown before all settings that given group contains."
+        },
+        "settings": {
+          "type": "array",
+          "description": "List of settings the group contains",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/setting"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "settings"
+      ]
+    },
+    "settingsTab": {
+      "type": "object",
+      "description": "Serves as top level of hierarchy when defining settings. Tabs cannot be nested in other tabs or groups.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tab identifier."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tab name shown in UI."
+        },
+        "header": {
+          "$ref": "#/definitions/settingsHeader",
+          "description": "Banner with info text shown before all settings and groups contained in tab."
+        },
+        "groups": {
+          "type": "array",
+          "description": "List of setting groups contained in tab.",
+          "items": {
+            "$ref": "#/definitions/settingsGroup"
+          }
+        },
+        "settings": {
+          "type": "array",
+          "description": "List of settings contained in tab",
+          "items": {
+            "$ref": "#/definitions/setting"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "description": "Top level settings property. All settings grouped in tabs are defined here.",
+      "properties": {
+        "tabs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/settingsTab"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "tabs"
+      ]
+    },
+    "selfHostedSettings": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to addon endpoint designated for serving addon hosted settings. Path is just a part of the url from which addon hosted settings are served. Full url is constructed by concatenating addon 'baseUrl' and path."
+    },
+    "minimalSubscriptionPlan": {
+      "type": "string",
+      "description": "Specifies Clockify's minimal subscription plan required by addon.",
+      "enum": [
+        "FREE",
+        "BASIC",
+        "STANDARD",
+        "PRO",
+        "ENTERPRISE"
+      ]
+    }
+  },
+  "properties": {
+    "schemaVersion": {
+      "description": "All JSON schemes will be versioned and this field specifies which version will be used to validate JSON manifest. If no 'schemaVersion' is defined, latest JSON schema version will be used.",
+      "type": [
+        "string",
+        "integer"
+      ],
+      "minLength": 1,
+      "minimum": 1
+    },
+    "key": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "description": "Serves as addon identifier. All addons must have unique key."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Addon name"
+    },
+    "baseUrl": {
+      "$ref": "#/definitions/url",
+      "description": "Base url on which addon app is hosted. This url with 'path' from the following entities is used when constructing urls for webhooks, components, lifecycle hooks, etc.",
+      "example": [
+        "https://addon-address.example.com/"
+      ]
+    },
+    "minimalSubscriptionPlan": {
+      "$ref": "#/definitions/minimalSubscriptionPlan",
+      "description": "Minimal Clockify's subscription plan that is required for addon. This plan is used when checking if user's current plan is at least equal to the plan required by addon.",
+      "example": [
+        "PRO"
+      ]
+    },
+    "scopes": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "API scopes that addon is using.",
+      "items": {
+        "$ref": "#/definitions/scope",
+        "example": [
+          "PROJECT_READ"
+        ]
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of given addon functionalities and purpose."
+    },
+    "iconPath": {
+      "type": "string",
+      "description": "Path to addon icon. Path is part of the url where image icon is being hosted. Full url is constructed by concatenating addon 'baseUrl' and path."
+    },
+    "lifecycle": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "List of defined lifecycle hooks for given addon.",
+      "items": {
+        "$ref": "#/definitions/lifecycle"
+      }
+    },
+    "webhooks": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "List of defined webhooks for given addon.",
+      "items": {
+        "$ref": "#/definitions/webhook"
+      }
+    },
+    "components": {
+      "type": "array",
+      "description": "List of defined components for given addon.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/component"
+      }
+    },
+    "settings": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/selfHostedSettings"
+        },
+        {
+          "$ref": "#/definitions/settings"
+        }
+      ]
+    }
+  },
+  "required": [
+    "key",
+    "name",
+    "baseUrl",
+    "minimalSubscriptionPlan"
+  ]
+}

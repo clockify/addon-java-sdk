@@ -44,11 +44,13 @@ public class ManifestExtensionProcessor extends javax.annotation.processing.Abst
         for (Element element : elements) {
             DeclaredType type = (DeclaredType) element.asType();
 
-            try {
-                files.addAll(new ClockifyManifestProcessor(type).process());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
+            for (String manifestPath: Utils.getClockifyManifestPaths()) {
+                try {
+                    files.addAll(new ClockifyManifestProcessor(type, manifestPath).process());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
             }
         }
 

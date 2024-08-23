@@ -18,8 +18,8 @@ public class ClockifyManifestProcessor {
     private final String packageName;
     private final String className;
 
-    public ClockifyManifestProcessor(DeclaredType type) {
-        this.manifest = Utils.readManifestDefinition(new ObjectMapper());
+    public ClockifyManifestProcessor(DeclaredType type, String manifestPath) {
+        this.manifest = Utils.readManifestDefinition(new ObjectMapper(), manifestPath);
 
         String[] qualifiedNames = Utils.getPackageAndClassNames(type);
         this.packageName = qualifiedNames[0];
@@ -40,7 +40,6 @@ public class ClockifyManifestProcessor {
             if (isObjectDefinition(node)) {
                 DefinitionProcessor processor = new DefinitionProcessor(
                         manifest,
-                        packageName,
                         Utils.getDefinitionSimpleClassName(definition),
                         definition
                 );
@@ -49,7 +48,6 @@ public class ClockifyManifestProcessor {
             } else if (isEnumDefinition(node)) {
                 EnumConstantsProcessor processor = new EnumConstantsProcessor(
                         manifest,
-                        packageName,
                         definition
                 );
 
@@ -61,7 +59,7 @@ public class ClockifyManifestProcessor {
     }
 
     private List<JavaFile> getManifestDefinition() {
-        return new DefinitionProcessor(manifest, packageName, className, null).process();
+        return new DefinitionProcessor(manifest, className, null).process();
     }
 
     private boolean isObjectDefinition(JsonNode node) {

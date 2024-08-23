@@ -5,8 +5,11 @@ import com.cake.clockify.annotationprocessor.NodeConstants;
 import com.cake.clockify.annotationprocessor.Utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
@@ -16,7 +19,12 @@ import javax.lang.model.element.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
+
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_MANIFEST_INTERFACE;
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_MODEL_PACKAGE;
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_PATH_INTERFACE;
 
 class DefinitionProcessor {
 
@@ -25,6 +33,7 @@ class DefinitionProcessor {
 
     private static final String STEP_BUILDER = "Build";
     private static final String STEP_OPTIONAL = "Optional";
+    private static final String PROPERTY_SCHEMA_VERSION = "schemaVersion";
 
     private final JsonNode manifest;
     private final JsonNode propertiesNode;
@@ -37,10 +46,10 @@ class DefinitionProcessor {
     private final List<String> requiredProperties;
     private final List<String> optionalProperties;
 
-    public DefinitionProcessor(JsonNode manifest, String packageName, String className, @Nullable String definition) {
+    public DefinitionProcessor(JsonNode manifest, String className, @Nullable String definition) {
         this.manifest = manifest;
 
-        this.packageName = packageName;
+        this.packageName = Utils.getVersionedPackageName(manifest, CLOCKIFY_MODEL_PACKAGE);
         this.className = className;
         this.definition = definition;
 
@@ -62,16 +71,23 @@ class DefinitionProcessor {
     }
 
     public List<JavaFile> process() {
-        return processTypes().stream().map(t -> JavaFile.builder(packageName, t).build()).toList();
+        List<TypeSpec> interfaces = getBuilderStepClasses();
+
+        List<TypeSpec> specs = new LinkedList<>();
+        specs.add(getModelClass(interfaces));
+        specs.addAll(interfaces);
+        specs.add(getModelBuilderClass(interfaces));
+
+        return specs.stream().map(t -> JavaFile.builder(packageName, t).build()).toList();
     }
 
-    private List<TypeSpec> processTypes() {
+    private List<TypeSpec> getBuilderStepClasses() {
         List<TypeSpec> types = new LinkedList<>();
 
         boolean optionalStep = requiredProperties.size() != properties.size();
         String lastStep = optionalStep ? STEP_OPTIONAL : STEP_BUILDER;
 
-        ClassName lastStepClass = getInterfaceClassName(lastStep);
+        ClassName lastStepClass = getInterfaceStepClassName(lastStep);
 
         // each required property will have its own interface to guide the user through
         // the build process for the object
@@ -80,7 +96,7 @@ class DefinitionProcessor {
 
             ClassName nextInterface = i == requiredProperties.size() - 1
                     ? lastStepClass
-                    : getInterfaceClassName(requiredProperties.get(i + 1));
+                    : getInterfaceStepClassName(requiredProperties.get(i + 1));
 
             List<MethodSpec> methods = new LinkedList<>();
             // adding primary setter method
@@ -103,12 +119,174 @@ class DefinitionProcessor {
         return types;
     }
 
+    private TypeSpec getModelClass(List<TypeSpec> interfaces) {
+        List<FieldSpec> fields = properties.stream()
+                .map(p -> PROPERTY_SCHEMA_VERSION.equals(p) ? getSchemaVersionField() : getModelPropertyField(p))
+                .toList();
+
+        List<MethodSpec> methods = new LinkedList<>();
+
+        methods.add(getModelConstructor(fields));
+        methods.add(getModelBuilderMethod(interfaces.get(0)));
+
+        for (FieldSpec field : fields) {
+            methods.add(getModelGetterMethod(field));
+            if (isManifestDefinition() && "settings".equals(field.name)) {
+                methods.add(getModelSetterMethod(field));
+            }
+        }
+
+        return TypeSpec.classBuilder(ClassName.get(packageName, className))
+                .addSuperinterfaces(getModelSuperInterfaces())
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addFields(fields)
+                .addMethods(methods)
+                .build();
+    }
+
+    private List<ClassName> getModelSuperInterfaces() {
+        return Stream.of(
+                        isManifestDefinition() ? ClassName.get(CLOCKIFY_MODEL_PACKAGE, CLOCKIFY_MANIFEST_INTERFACE) : null,
+                        shouldImplementPathInterface() ? ClassName.get(CLOCKIFY_MODEL_PACKAGE, CLOCKIFY_PATH_INTERFACE) : null
+                )
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private TypeSpec getModelBuilderClass(List<TypeSpec> interfaces) {
+        ClassName modelName = ClassName.get(packageName, className);
+        ClassName builderName = ClassName.get(packageName, className + "Builder");
+
+        List<FieldSpec> fields = new LinkedList<>();
+        List<MethodSpec> methods = new LinkedList<>();
+
+        for (String property : properties.stream().filter(p -> !PROPERTY_SCHEMA_VERSION.equals(p)).toList()) {
+            fields.add(getModelPropertyField(property));
+        }
+
+        for (FieldSpec field : fields) {
+            methods.add(getModelBuilderSetterMethod(builderName, field));
+        }
+
+        methods.add(MethodSpec.methodBuilder("build")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(modelName)
+                .addStatement("return new $L($L)", modelName.simpleName(), CodeBlock.join(
+                        fields.stream().map(f -> CodeBlock.of("$N", f)).toList(),
+                        ", "
+                ))
+                .build()
+        );
+
+        return TypeSpec.classBuilder(builderName)
+                .addSuperinterfaces(interfaces.stream()
+                        .map(spec -> ClassName.get("", spec.name))
+                        .toList()
+                )
+                .addFields(fields)
+                .addMethods(methods)
+                .build();
+    }
+
+    private MethodSpec getModelConstructor(List<FieldSpec> fields) {
+        fields = fields.stream()
+                .filter(f -> !PROPERTY_SCHEMA_VERSION.equals(f.name))
+                .toList();
+
+        var constructorBuilder = MethodSpec.constructorBuilder()
+                .addParameters(fields.stream()
+                        .map(f -> ParameterSpec.builder(f.type, f.name).build())
+                        .toList()
+                );
+
+        for (String property : requiredProperties) {
+            constructorBuilder.addStatement("$T.requireNonNull($N)", Objects.class, property);
+        }
+
+        for (FieldSpec field : fields) {
+            constructorBuilder.addStatement("this.$N = $N", field, field);
+        }
+
+        return constructorBuilder.build();
+    }
+
+    private MethodSpec getModelBuilderMethod(TypeSpec firstStep) {
+        return MethodSpec.methodBuilder("builder")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(ClassName.get("", firstStep.name))
+                .addStatement("return new $N()", ClassName.get(packageName, className + "Builder").simpleName())
+                .build();
+    }
+
+    private FieldSpec getSchemaVersionField() {
+        return FieldSpec.builder(String.class, PROPERTY_SCHEMA_VERSION)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .initializer("$S", manifest.get("version").asText())
+                .build();
+    }
+
+    private FieldSpec getModelPropertyField(String property) {
+        JsonNode node = propertiesNode.get(property);
+        TypeName type = getTypeNameFromPropertyNode(node);
+
+        FieldSpec.Builder builder = FieldSpec.builder(type, property);
+        if (type instanceof ParameterizedTypeName parametrizedType
+                && parametrizedType.rawType.equals(ClassName.get(List.class))) {
+            builder.initializer("new $T()", LinkedList.class);
+        }
+        return builder
+                .addModifiers(Modifier.PRIVATE)
+                .addJavadoc(Utils.getPropertyDescription(node))
+                .build();
+    }
+
+    private MethodSpec getModelGetterMethod(FieldSpec field) {
+        String propertyMethodName = Utils.toMethodName(field.name);
+        String getterName = "get" + Utils.capitalize(propertyMethodName);
+
+        return MethodSpec.methodBuilder(getterName)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(field.type)
+                .addStatement("return $N", field.name)
+                .build();
+    }
+
+    private MethodSpec getModelSetterMethod(FieldSpec field) {
+        String propertyMethodName = Utils.toMethodName(field.name);
+        String setterName = "set" + Utils.capitalize(propertyMethodName);
+
+        return MethodSpec.methodBuilder(setterName)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(Object.class, "settings")
+                .returns(TypeName.VOID)
+                .addStatement("this.$L = $L", field.name, field.name)
+                .build();
+    }
+
+    private MethodSpec getModelBuilderSetterMethod(TypeName builder, FieldSpec field) {
+        return MethodSpec.methodBuilder(Utils.toMethodName(field.name))
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(builder)
+                .addParameter(field.type, field.name)
+                .addStatement("this.$N = $N", field.name, field.name)
+                .addStatement("return this")
+                .build();
+    }
+
+    private boolean isManifestDefinition() {
+        return properties.contains(PROPERTY_SCHEMA_VERSION);
+    }
+
+    private boolean shouldImplementPathInterface() {
+        return definition != null && List.of("lifecycle", "webhook", "component").contains(definition);
+    }
+
     private boolean shouldSkipProperty(String property) {
-        return "schemaVersion".equals(property);
+        return PROPERTY_SCHEMA_VERSION.equals(property);
     }
 
     private TypeSpec getOptionalStepClass(String step) {
-        ClassName interfaceName = getInterfaceClassName(step);
+        ClassName interfaceName = getInterfaceStepClassName(step);
 
         List<MethodSpec> methods = Stream.concat(
                 optionalProperties.stream()
@@ -180,13 +358,13 @@ class DefinitionProcessor {
     }
 
     private TypeSpec getInterfaceClass(String property, List<MethodSpec> methods) {
-        return TypeSpec.interfaceBuilder(getInterfaceClassName(property))
+        return TypeSpec.interfaceBuilder(getInterfaceStepClassName(property))
                 .addModifiers(Modifier.PUBLIC)
                 .addMethods(methods)
                 .build();
     }
 
-    private ClassName getInterfaceClassName(String step) {
+    private ClassName getInterfaceStepClassName(String step) {
         String name = className + TEMPLATE_INTERFACE_NAME.formatted(Utils.toClassName(step));
         return ClassName.get(packageName, name);
     }

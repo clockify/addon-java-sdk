@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.cake.clockify.annotationprocessor.Constants.CLOCKIFY_MODEL_PACKAGE;
+
 class EnumConstantsProcessor {
 
     private final String packageName;
@@ -20,8 +22,8 @@ class EnumConstantsProcessor {
 
     private final List<String> values = new LinkedList<>();
 
-    public EnumConstantsProcessor(JsonNode manifest, String packageName, String definition) {
-        this.packageName = packageName;
+    public EnumConstantsProcessor(JsonNode manifest, String definition) {
+        this.packageName = Utils.getVersionedPackageName(manifest, CLOCKIFY_MODEL_PACKAGE);
         this.definition = definition;
 
         JsonNode enumNode = manifest.get(NodeConstants.DEFINITIONS).get(definition).get(NodeConstants.ENUM);
