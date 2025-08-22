@@ -25,8 +25,4 @@ public interface ClockifyManifest {
     static com.cake.clockify.addonsdk.clockify.model.v1_3.ClockifyManifestBuilderKeyStep v1_3Builder() {
         return com.cake.clockify.addonsdk.clockify.model.v1_3.ClockifyManifest.builder();
     }
-
-    static com.cake.clockify.addonsdk.clockify.model.v1_4.ClockifyManifestBuilderKeyStep v1_4Builder() {
-        return com.cake.clockify.addonsdk.clockify.model.v1_4.ClockifyManifest.builder();
-    }
 }
