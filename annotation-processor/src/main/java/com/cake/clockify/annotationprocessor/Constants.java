@@ -17,7 +17,10 @@ public class Constants {
     public static final List<String> CLOCKIFY_MANIFESTS = List.of(
             CLOCKIFY_MANIFESTS_DIR + "/1.2.json",
             CLOCKIFY_MANIFESTS_DIR + "/1.3.json",
-            CLOCKIFY_MANIFESTS_DIR + "/1.4.json"
+            CLOCKIFY_MANIFESTS_DIR + "/1.4.json",
+            CLOCKIFY_MANIFESTS_DIR + "/1.5.json",
+            CLOCKIFY_MANIFESTS_DIR + "/1.5.1.json",
+            CLOCKIFY_MANIFESTS_DIR + "/1.6.json"
     );
 
     public static final String CLOCKIFY_PREFIX = "Clockify";
