@@ -7,6 +7,7 @@ import com.cake.clockify.addonsdk.shared.RequestHandler;
 import lombok.NonNull;
 
 public class ClockifyAddon extends Addon<ClockifyManifest> {
+
     public ClockifyAddon(@NonNull ClockifyManifest manifest) {
         super(manifest);
     }
